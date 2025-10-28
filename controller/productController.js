@@ -2,13 +2,15 @@ const Product = require("../models/productModel");
 const RecentlyViewed = require("../models/recentlyViewesModel");
 const generateMetaHtml = require('../utils/generateMetaHtml');
 const mongoose = require("mongoose");
-const upload = require("../lib/multer");
 
 
 const cloudinary = require("../lib/cloudinary");
 
 const createProduct = async (req, res, next) => {
   try {
+    console.log("📦 req.body:", req.body);
+    console.log("📸 req.files:", req.files);
+
     const {
       name,
       description,
@@ -20,6 +22,7 @@ const createProduct = async (req, res, next) => {
       computerProperty // this will come as JSON string
     } = req.body;
 
+    // ✅ FIXED: removed `!images`
     if (!name || !brand || !price || !odd || !category) {
       return res.status(400).json({
         success: false,
@@ -27,21 +30,29 @@ const createProduct = async (req, res, next) => {
       });
     }
 
+    // ✅ Check uploaded files separately
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ success: false, message: "Please add product images." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please add product images." });
     }
 
-    // Upload each image to Cloudinary
+    // ✅ Upload to Cloudinary
     const imagesBuffer = [];
     for (const file of req.files) {
-      const result = await cloudinary.uploader.upload(file.path,
-        { folder: "products" });
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "products",
+      });
       imagesBuffer.push({
-        public_id: result.public_id, url: result.secure_url
+        public_id: result.public_id,
+        url: result.secure_url,
       });
     }
 
-    const parsedComputerProperty = computerProperty ? JSON.parse(computerProperty) : {};
+    // ✅ Parse computerProperty only if present
+    const parsedComputerProperty = computerProperty
+      ? JSON.parse(computerProperty)
+      : {};
 
     const data = {
       name,
