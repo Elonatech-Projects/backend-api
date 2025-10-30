@@ -8,8 +8,8 @@ const cloudinary = require("../lib/cloudinary");
 
 const createProduct = async (req, res, next) => {
   try {
-    console.log("📦 req.body:", req.body);
-    console.log("📸 req.files:", req.files);
+    // console.log("📦 req.body:", req.body);
+    // console.log("📸 req.files:", req.files);
 
     const {
       name,
@@ -19,11 +19,12 @@ const createProduct = async (req, res, next) => {
       brand,
       quantity,
       category,
-      computerProperty // this will come as JSON string
+      // images,
+      computerProperty
     } = req.body;
 
     // ✅ FIXED: removed `!images`
-    if (!name || !brand || !price || !odd || !category) {
+    if (!name || !brand || !price || !category) {
       return res.status(400).json({
         success: false,
         message: "Please fill Name, Brand, Price, and Category fields.",
@@ -50,10 +51,8 @@ const createProduct = async (req, res, next) => {
     }
 
     // ✅ Parse computerProperty only if present
-    const parsedComputerProperty = computerProperty
-      ? JSON.parse(computerProperty)
-      : {};
-
+    const parsedComputerProperty = computerProperty ? JSON.parse(computerProperty)  : {};
+      
     const data = {
       name,
       description,
@@ -63,6 +62,8 @@ const createProduct = async (req, res, next) => {
       quantity,
       id: parseInt(Date.now() * Math.random()),
       category,
+      // computerProperty,
+      // images
       computerProperty: [parsedComputerProperty],
       images: imagesBuffer,
     };
